@@ -2,6 +2,7 @@ package com.example.backendproject.controller;
 
 import com.example.backendproject.dto.AppointmentDTO;
 import com.example.backendproject.model.AppointmentStatus;
+import com.example.backendproject.dto.DoctorDTO;
 import com.example.backendproject.model.Doctor;
 import com.example.backendproject.service.AppointmentService;
 import com.example.backendproject.service.DoctorService;
@@ -21,6 +22,11 @@ public class DoctorController {
     public DoctorController(AppointmentService appointmentService, DoctorService doctorService) {
         this.appointmentService = appointmentService;
         this.doctorService = doctorService;
+    }
+
+    @GetMapping
+    public List<DoctorDTO> allDoctors() {
+        return doctorService.getAllDoctors();
     }
 
     @PreAuthorize("hasRole('DOCTOR')")

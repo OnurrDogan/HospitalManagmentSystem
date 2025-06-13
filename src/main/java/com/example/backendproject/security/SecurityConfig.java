@@ -15,7 +15,9 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, UserDetailsService uds) throws Exception {
         http.csrf().disable()
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(
+                                "/", "/index.html", "/js/**", "/css/**", "/api/auth/**"
+                        ).permitAll()
                         .anyRequest().authenticated())
                 .userDetailsService(uds)
                 .httpBasic();
