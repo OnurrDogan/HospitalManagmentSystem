@@ -8,6 +8,10 @@ function App() {
   const [apptTime, setApptTime] = useState('');
   const [patientAppts, setPatientAppts] = useState([]);
   const [doctorAppts, setDoctorAppts] = useState([]);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+  const [loginUser, setLoginUser] = useState('');
+  const [loginPass, setLoginPass] = useState('');
 
   const registerPatient = async (e) => {
     e.preventDefault();
@@ -23,23 +27,26 @@ function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     });
-    if (res.ok) alert('Registered!'); else alert(await res.text());
+    if (res.ok) {
+      alert('Registered!');
+      setShowRegister(false);
+    } else {
+      alert(await res.text());
+    }
   };
 
   const loginPatient = (e) => {
     e.preventDefault();
-    const u = e.target.patUser.value;
-    const p = e.target.patPass.value;
-    setAuthHeader('Basic ' + btoa(u + ':' + p));
+    setAuthHeader('Basic ' + btoa(loginUser + ':' + loginPass));
     setRole('PATIENT');
+    setShowLogin(false);
   };
 
   const loginDoctor = (e) => {
     e.preventDefault();
-    const u = e.target.docUser.value;
-    const p = e.target.docPass.value;
-    setAuthHeader('Basic ' + btoa(u + ':' + p));
+    setAuthHeader('Basic ' + btoa(loginUser + ':' + loginPass));
     setRole('DOCTOR');
+    setShowLogin(false);
   };
 
   const loadDoctors = async () => {
@@ -96,34 +103,42 @@ function App() {
 
   return (
     <div id="container">
+      <div id="top-bar">
+        <button onClick={() => setShowLogin(true)}>Login</button>
+        <button onClick={() => setShowRegister(true)}>Register</button>
+      </div>
       <h1>Hospital Appointment System</h1>
 
-      <form onSubmit={registerPatient}>
-        <h2>Register Patient</h2>
-        <input name="regUsername" placeholder="Username" />
-        <input name="regPassword" type="password" placeholder="Password" />
-        <input name="regName" placeholder="Name" />
-        <input name="regAge" type="number" placeholder="Age" />
-        <input name="regContact" placeholder="Contact" />
-        <button type="submit">Register</button>
-      </form>
-      <hr />
+      {showLogin && (
+        <div className="modal-overlay" onClick={() => setShowLogin(false)}>
+          <form className="modal" onClick={e => e.stopPropagation()}>
+            <h2>Login</h2>
+            <input value={loginUser} onChange={e => setLoginUser(e.target.value)} placeholder="Username" />
+            <input type="password" value={loginPass} onChange={e => setLoginPass(e.target.value)} placeholder="Password" />
+            <div style={{display:'flex',justifyContent:'space-between'}}>
+              <button onClick={loginPatient}>Patient Login</button>
+              <button onClick={loginDoctor}>Doctor Login</button>
+            </div>
+            <button type="button" onClick={() => setShowLogin(false)}>Close</button>
+          </form>
+        </div>
+      )}
 
-      <form onSubmit={loginPatient}>
-        <h2>Login as Patient</h2>
-        <input name="patUser" placeholder="Username" />
-        <input name="patPass" type="password" placeholder="Password" />
-        <button type="submit">Login</button>
-      </form>
-
-      <form onSubmit={loginDoctor}>
-        <h2>Login as Doctor</h2>
-        <input name="docUser" placeholder="Username" />
-        <input name="docPass" type="password" placeholder="Password" />
-        <button type="submit">Login</button>
-      </form>
-      <hr />
-
+      {showRegister && (
+        <div className="modal-overlay" onClick={() => setShowRegister(false)}>
+          <form className="modal" onSubmit={registerPatient} onClick={e => e.stopPropagation()}>
+            <h2>Register Patient</h2>
+            <input name="regUsername" placeholder="Username" />
+            <input name="regPassword" type="password" placeholder="Password" />
+            <input name="regName" placeholder="Name" />
+            <input name="regAge" type="number" placeholder="Age" />
+            <input name="regContact" placeholder="Contact" />
+            <button type="submit">Register</button>
+            <button type="button" onClick={() => setShowRegister(false)}>Close</button>
+          </form>
+        </div>
+      )}
+      
       {role === 'PATIENT' && (
         <div id="patient-area">
           <h2>Patient Area</h2>
