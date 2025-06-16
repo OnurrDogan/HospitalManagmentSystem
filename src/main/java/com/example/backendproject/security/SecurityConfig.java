@@ -13,7 +13,8 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, UserDetailsService uds) throws Exception {
-        http.csrf().disable()
+        http.cors().and()
+                .csrf().disable()
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/", "/index.html", "/js/**", "/css/**", "/api/auth/**"
