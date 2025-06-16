@@ -14,6 +14,7 @@ services:
 
   app:
     image: your-spring-boot-image  # Spring Boot uygulamanızın Docker image'ı
+    container_name: backendproject-app-1
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mydb
       SPRING_DATASOURCE_USERNAME: myuser

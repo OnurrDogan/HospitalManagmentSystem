@@ -18,7 +18,7 @@ function App() {
       age: parseInt(e.target.regAge.value),
       contactNumber: e.target.regContact.value
     };
-    const res = await fetch('/api/auth/register', {
+    const res = await fetch('http://localhost:8080/api/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
@@ -43,7 +43,7 @@ function App() {
   };
 
   const loadDoctors = async () => {
-    const r = await fetch('/api/doctor', { headers: { Authorization: authHeader } });
+    const r = await fetch('http://localhost:8080/api/doctor', { headers: { Authorization: authHeader } });
     const list = await r.json();
     setDoctors(list);
     if (list.length) setDoctorId(list[0].id);
@@ -55,7 +55,7 @@ function App() {
       doctorId: parseInt(doctorId),
       appointmentTime: apptTime
     };
-    const r = await fetch('/api/patient/appointments', {
+    const r = await fetch('http://localhost:8080/api/patient/appointments', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -68,17 +68,17 @@ function App() {
   };
 
   const loadPatientAppointments = async () => {
-    const r = await fetch('/api/patient/appointments', { headers: { Authorization: authHeader } });
+    const r = await fetch('http://localhost:8080/api/patient/appointments', { headers: { Authorization: authHeader } });
     setPatientAppts(await r.json());
   };
 
   const loadDoctorAppointments = async () => {
-    const r = await fetch('/api/doctor/appointments', { headers: { Authorization: authHeader } });
+    const r = await fetch('http://localhost:8080/api/doctor/appointments', { headers: { Authorization: authHeader } });
     setDoctorAppts(await r.json());
   };
 
   const updateAppointment = async (id, status, notes) => {
-    await fetch(`/api/doctor/appointments/${id}/status`, {
+    await fetch(`http://localhost:8080/api/doctor/appointments/${id}/status`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

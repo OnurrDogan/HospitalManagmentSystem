@@ -22,7 +22,7 @@ function registerPatient() {
         age: parseInt(document.getElementById('regAge').value),
         contactNumber: document.getElementById('regContact').value
     };
-    fetch('/api/auth/register', {
+    fetch('http://localhost:8080/api/auth/register', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(data)
@@ -55,7 +55,7 @@ function loginDoctor() {
 }
 
 function loadDoctors() {
-    fetch('/api/doctor', {headers: {Authorization: authHeader}})
+    fetch('http://localhost:8080/api/doctor', {headers: {Authorization: authHeader}})
         .then(r => r.json())
         .then(list => {
             const sel = document.getElementById('doctorId');
@@ -74,7 +74,7 @@ function createAppointment() {
         doctorId: parseInt(document.getElementById('doctorId').value),
         appointmentTime: document.getElementById('apptTime').value
     };
-    fetch('/api/patient/appointments', {
+    fetch('http://localhost:8080/api/patient/appointments', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ function createAppointment() {
 }
 
 function loadPatientAppointments() {
-    fetch('/api/patient/appointments', {headers: {Authorization: authHeader}})
+    fetch('http://localhost:8080/api/patient/appointments', {headers: {Authorization: authHeader}})
         .then(r => r.json())
         .then(data => {
             document.getElementById('patientAppts').textContent = JSON.stringify(data, null, 2);
@@ -95,7 +95,7 @@ function loadPatientAppointments() {
 }
 
 function loadDoctorAppointments() {
-    fetch('/api/doctor/appointments', {headers: {Authorization: authHeader}})
+    fetch('http://localhost:8080/api/doctor/appointments', {headers: {Authorization: authHeader}})
         .then(r => r.json())
         .then(list => {
             const div = document.getElementById('doctorAppts');
@@ -123,7 +123,7 @@ function loadDoctorAppointments() {
 }
 
 function updateAppointment(id, status, notes) {
-    fetch('/api/doctor/appointments/' + id + '/status', {
+    fetch('http://localhost:8080/api/doctor/appointments/' + id + '/status', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
