@@ -1,6 +1,19 @@
 let authHeader = '';
 let currentRole = '';
 
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('loginBtn').addEventListener('click', () => showModal('loginModal'));
+    document.getElementById('registerBtn').addEventListener('click', () => showModal('registerModal'));
+});
+
+function showModal(id) {
+    document.getElementById(id).style.display = 'block';
+}
+
+function closeModal(id) {
+    document.getElementById(id).style.display = 'none';
+}
+
 function registerPatient() {
     const data = {
         username: document.getElementById('regUsername').value,
@@ -15,7 +28,8 @@ function registerPatient() {
         body: JSON.stringify(data)
     })
     .then(r => r.ok ? alert('Registered!') : r.text().then(t => alert(t)))
-    .catch(err => alert(err));
+    .catch(err => alert(err))
+    .finally(() => closeModal('registerModal'));
 }
 
 function loginPatient() {
@@ -26,6 +40,7 @@ function loginPatient() {
     document.getElementById('patient-area').style.display = 'block';
     document.getElementById('doctor-area').style.display = 'none';
     loadDoctors();
+    closeModal('loginModal');
 }
 
 function loginDoctor() {
@@ -36,6 +51,7 @@ function loginDoctor() {
     document.getElementById('doctor-area').style.display = 'block';
     document.getElementById('patient-area').style.display = 'none';
     loadDoctorAppointments();
+    closeModal('loginModal');
 }
 
 function loadDoctors() {
