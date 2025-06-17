@@ -1,9 +1,7 @@
-package com.example.backendproject.security;
+package com.example.backendproject.service;
 
 import com.example.backendproject.model.Doctor;
 import com.example.backendproject.model.Patient;
-import com.example.backendproject.service.DoctorService;
-import com.example.backendproject.service.PatientService;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;

@@ -18,4 +18,9 @@ public class AuthController {
     public ResponseEntity<PatientDTO> register(@RequestBody PatientDTO dto) {
         return ResponseEntity.ok(patientService.registerPatient(dto));
     }
+
+    @PostMapping("/login")
+    public ResponseEntity<String> login(@RequestBody PatientDTO dto) {
+        return ResponseEntity.ok("Login successful for user: " + dto.getUsername());
+    }
 }

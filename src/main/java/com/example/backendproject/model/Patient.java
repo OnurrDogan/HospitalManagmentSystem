@@ -21,9 +21,8 @@ public class Patient {
 
     public Patient() {}
 
-    public Patient(String username, String password, String name, int age, String contactNumber) {
+    public Patient(String username, String name, int age, String contactNumber) {
         this.username = username;
-        this.password = password;
         this.name = name;
         this.age = age;
         this.contactNumber = contactNumber;
