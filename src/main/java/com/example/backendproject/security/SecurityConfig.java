@@ -11,20 +11,25 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @Configuration
 public class SecurityConfig {
 
     // 1️⃣  Tell Spring-Security to honour CORS
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults())   // handles OPTIONS before auth
-                .csrf(csrf -> csrf.disable())      // keep or drop as you like
+                .cors(withDefaults())               // ← artık bu şekilde
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()); // demo – tighten later
-
+                        .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
+                        .anyRequest().permitAll()
+                )
+                .httpBasic(withDefaults());         // test amaçlı basic auth
         return http.build();
     }
+    
 
     // 2️⃣  Provide the CorsConfigurationSource that both MVC *and* Security will reuse
     @Bean

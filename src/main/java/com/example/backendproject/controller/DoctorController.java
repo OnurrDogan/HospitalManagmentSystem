@@ -6,8 +6,11 @@ import com.example.backendproject.dto.DoctorDTO;
 import com.example.backendproject.model.Doctor;
 import com.example.backendproject.service.AppointmentService;
 import com.example.backendproject.service.DoctorService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.security.Principal;
 import java.util.List;
@@ -31,8 +34,11 @@ public class DoctorController {
 
     @PreAuthorize("hasRole('DOCTOR')")
     @GetMapping("/appointments")
-    public List<AppointmentDTO> myAppointments(Principal principal) {
-        Doctor doctor = doctorService.findByUsername(principal.getName());
+    public List<AppointmentDTO> myAppointments(Authentication auth) {
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Not authenticated");
+        }
+        Doctor doctor = doctorService.findByUsername(auth.getName());
         return appointmentService.getAppointmentsForDoctor(doctor);
     }
 

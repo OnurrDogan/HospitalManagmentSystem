@@ -1,14 +1,24 @@
 package com.example.backendproject.dto;
 
 import com.example.backendproject.model.AppointmentStatus;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import org.antlr.v4.runtime.misc.NotNull;
+
 import java.time.LocalDateTime;
 
 public class AppointmentDTO {
+
     private Long id;
+
+    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm[:ss]")   // saniye opsiyonel
     private LocalDateTime appointmentTime;
+
+    @NotNull
     private Long doctorId;
-    private Long patientId;
-    private AppointmentStatus status;
+
+    private Long patientId;        // servis dolduracak
+    private AppointmentStatus status = AppointmentStatus.PENDING;
     private String notes;
 
     public AppointmentDTO() {}

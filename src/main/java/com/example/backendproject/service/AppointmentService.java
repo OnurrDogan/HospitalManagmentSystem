@@ -1,11 +1,16 @@
 package com.example.backendproject.service;
 
 import com.example.backendproject.dto.AppointmentDTO;
+import com.example.backendproject.mappers.AppointmentMapper;
 import com.example.backendproject.model.*;
 import com.example.backendproject.repository.AppointmentRepository;
 import com.example.backendproject.repository.DoctorRepository;
 import com.example.backendproject.repository.PatientRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,15 +30,22 @@ public class AppointmentService {
         this.patientRepository = patientRepository;
     }
 
+    @Transactional
     public AppointmentDTO createAppointment(AppointmentDTO dto) {
-        Doctor doctor = doctorRepository.findById(dto.getDoctorId()).orElseThrow();
-        Patient patient = patientRepository.findById(dto.getPatientId()).orElseThrow();
-        if (appointmentRepository.existsByDoctorAndAppointmentTime(doctor, dto.getAppointmentTime())) {
-            throw new IllegalStateException("Appointment slot taken");
-        }
-        Appointment appointment = new Appointment(dto.getAppointmentTime(), doctor, patient);
-        Appointment saved = appointmentRepository.save(appointment);
-        return toDto(saved);
+
+        Doctor doctor = doctorRepository.findById(dto.getDoctorId())
+                .orElseThrow(() -> new EntityNotFoundException("Doctor"));
+        Patient patient = patientRepository.findById(dto.getPatientId())
+                .orElseThrow(() -> new EntityNotFoundException("Patient"));
+
+        Appointment entity = AppointmentMapper.toEntity(dto, doctor, patient);
+
+        // çakışma kontrolü
+        boolean exists = appointmentRepository.existsByDoctorAndAppointmentTime(doctor, entity.getAppointmentTime());
+        if (exists) throw new ResponseStatusException(HttpStatus.CONFLICT, "Appointment already exists");
+
+        Appointment saved = appointmentRepository.save(entity);
+        return AppointmentMapper.toDto(saved);
     }
 
     public List<AppointmentDTO> getAppointmentsForPatient(Patient patient) {

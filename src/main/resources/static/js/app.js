@@ -100,6 +100,7 @@ function loadDoctorAppointments() {
         .then(list => {
             const div = document.getElementById('doctorAppts');
             div.innerHTML = '';
+            console.log('Loaded appointments:', list);
             list.forEach(ap => {
                 const container = document.createElement('div');
                 container.textContent = JSON.stringify(ap);
