@@ -8,12 +8,13 @@ services:
       POSTGRES_PASSWORD: mypassword
       POSTGRES_DB: mydb
     ports:
-      - "5432:5432"
+      - "5484:5432"
     networks:
       - spring-postgres-network
 
   app:
-    image: your-spring-boot-image  # Spring Boot uygulamanızın Docker image'ı
+    build:
+      context: .
     container_name: backendproject-app-1
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mydb
