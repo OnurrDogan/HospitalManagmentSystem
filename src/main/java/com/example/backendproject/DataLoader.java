@@ -24,12 +24,12 @@ public class DataLoader {
         return args -> {
             if (doctorRepo.count() == 0) {
                 Doctor doc = new Doctor("drsmith", "Dr. Smith", "Cardiology", "123456");
-                doc.setPassword(passwordEncoder().encode(doc.getPassword()));
+                doc.setPassword(passwordEncoder().encode("password"));
                 doctorRepo.save(doc);
             }
             if (patientRepo.count() == 0) {
                 Patient pat = new Patient("johndoe", "John Doe", 30, "555-1234");
-                pat.setPassword(passwordEncoder().encode(pat.getPassword()));
+                pat.setPassword(passwordEncoder().encode("password"));
                 patientRepo.save(pat);
             }
         };

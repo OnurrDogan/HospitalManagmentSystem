@@ -35,6 +35,18 @@ function registerPatient() {
 function loginPatient() {
     const u = document.getElementById('patUser').value;
     const p = document.getElementById('patPass').value;
+    fetch(
+        'http://localhost:8080/api/auth/login',
+        {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username: u, password: p})
+        }
+    ).then(r => {
+        if (!r.ok) throw new Error('Login failed');
+        return r.json();
+    }
+    )
     authHeader = 'Basic ' + btoa(u + ':' + p);
     currentRole = 'PATIENT';
     document.getElementById('patient-area').style.display = 'block';
@@ -46,6 +58,17 @@ function loginPatient() {
 function loginDoctor() {
     const u = document.getElementById('docUser').value;
     const p = document.getElementById('docPass').value;
+    fetch(
+        'http://localhost:8080/api/auth/login',
+        {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username: u, password: p})
+        }
+    ).then(r => {
+        if (!r.ok) throw new Error('Login failed');
+        return r.json();
+    });
     authHeader = 'Basic ' + btoa(u + ':' + p);
     currentRole = 'DOCTOR';
     document.getElementById('doctor-area').style.display = 'block';
@@ -105,7 +128,7 @@ function loadDoctorAppointments() {
                 const container = document.createElement('div');
                 container.textContent = JSON.stringify(ap);
                 const sel = document.createElement('select');
-                ['PENDING','APPROVED','REJECTED'].forEach(s => {
+                ['PENDING','CONFIRMED','DENIED'].forEach(s => {
                     const o = document.createElement('option');
                     o.value = s; o.textContent = s; if(ap.status===s) o.selected=true; sel.appendChild(o);
                 });
