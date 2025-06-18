@@ -1,71 +1,519 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="tr">
 <head>
     <meta charset="UTF-8" />
-    <title>Appointment System</title>
-    <link rel="stylesheet" href="css/style.css" />
-</head>
-<body>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hospital Appointment System</title>
 
-<nav id="top-bar">
-    <button id="loginBtn">Login</button>
-    <button id="registerBtn">Register</button>
+    <!-- Bootstrap & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <style>
+        body            { background:#f8f9fa; }
+        .modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; z-index:1050; }
+        .modal-wrapper  { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:#fff; border-radius:.5rem; width:90%; max-width:500px; padding:1.5rem; box-shadow:0 10px 25px rgba(0,0,0,.15); }
+
+        /* Time Grid */
+        .time-grid{display:grid; grid-template-columns:repeat(6,1fr); gap:.25rem; max-height:220px; overflow-y:auto;}
+        .time-slot{border:1px solid #dee2e6; padding:.35rem .25rem; text-align:center; font-size:.9rem; cursor:pointer; user-select:none; border-radius:.25rem;}
+        .time-slot:hover{background:#e9ecef;}
+        .time-slot.disabled{color:#ccc; cursor:not-allowed;}
+        .time-slot.active{background:#0d6efd; color:#fff;}
+    </style>
+</head>
+<body class="bg-light">
+
+<!-- Navbar Implementation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#">Medica</a>
+
+        <!-- Login and Register Buttons -->
+        <button id="loginBtn"    class="btn btn-outline-light ms-auto me-2">Giriş Yap</button>
+        <button id="registerBtn" class="btn btn-light">Kaydol</button>
+
+        <!-- Logout Button -->
+        <button id="logoutBtn"  class="btn btn-outline-light ms-auto me-2 d-none">Çıkış</button>
+    </div>
 </nav>
 
-<div id="container">
-<h1>Hospital Appointment System</h1>
+<div class="container py-5">
+
+    <!-- Patient Panel -->
+    <section id="patient-area" style="display:none">
+        <h2 class="mb-4">Hasta Paneli</h2>
+
+        <!-- Create Appointment Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" for="doctorId">Doktor</label>
+                        <select id="doctorId" class="form-select"></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold" for="apptDate">Tarih</label>
+                        <input type="date" id="apptDate" class="form-control" required />
+                    </div>
+                    <div class="col-md-4">
+                        <div id="timeGridPanel" style="display:none">
+                            <div id="timeGrid" class="time-grid"></div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="apptTimeFull" />
+                    <div class="col-md-2 d-grid">
+                        <button onclick="createAppointment()" class="btn btn-success btn-lg">
+                            <i class="fa-solid fa-calendar-plus me-2"></i>Randevu Al
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients Appointments -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Randevularım</h5>
+                <button onclick="loadPatientAppointments()" class="btn btn-sm btn-outline-primary">
+                    <i class="fa-solid fa-arrows-rotate me-1"></i>Yenile
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" id="patientApptsTable">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Doktor</th><th>Poliklinik</th><th>Zaman</th><th>Durum</th><th>Notlar</th><th>İptal Et</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- Doctor Panel -->
+    <section id="doctor-area" style="display:none">
+        <h2 class="mb-4">Doktor Paneli</h2>
+        <div class="alert alert-info">Randevu durumunu güncellemek için tabloyu kullanın.</div>
+
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Gelen Randevular</h5>
+                <button onclick="loadDoctorAppointments()" class="btn btn-sm btn-outline-primary">
+                    <i class="fa-solid fa-arrows-rotate me-1"></i>Yenile
+                </button>
+            </div>
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" id="doctorApptsTable">
+                    <thead class="table-light">
+                    <tr>
+                        <th>Hasta</th><th>Zaman</th><th>Durum</th><th>Not</th><th>Aksiyon</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
 
 <!-- Register Modal -->
-<div id="registerModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal('registerModal')">&times;</span>
-    <div id="register">
-        <h2>Register Patient</h2>
-        <input id="regUsername" placeholder="Username" />
-        <input id="regPassword" type="password" placeholder="Password" />
-        <input id="regName" placeholder="Name" />
-        <input id="regAge" type="number" placeholder="Age" />
-        <input id="regContact" placeholder="Contact" />
-        <button onclick="registerPatient()">Register</button>
+<div id="registerModal" class="modal-backdrop">
+    <div class="modal-wrapper">
+        <div class="modal-header">
+            <h5 class="modal-title">Hasta Kaydı</h5>
+            <button class="btn-close" aria-label="Close" onclick="closeModal('registerModal')"></button>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3"><label class="form-label">Kullanıcı Adı</label><input id="regUsername" type="text" class="form-control" /></div>
+            <div class="mb-3"><label class="form-label">Şifre</label><input id="regPassword" type="password" class="form-control" /></div>
+            <div class="mb-3"><label class="form-label">Ad Soyad</label><input id="regName" type="text" class="form-control" /></div>
+            <div class="mb-3"><label class="form-label">Yaş</label><input id="regAge" type="number" class="form-control" /></div>
+            <div class="mb-3"><label class="form-label">İletişim No</label><input id="regContact" type="text" class="form-control" /></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="closeModal('registerModal')">İptal</button>
+            <button class="btn btn-primary" onclick="registerPatient()">
+                <i class="fa-solid fa-user-plus me-1"></i>Kaydol
+            </button>
+        </div>
     </div>
-  </div>
 </div>
 
 <!-- Login Modal -->
-<div id="loginModal" class="modal">
-  <div class="modal-content">
-    <span class="close" onclick="closeModal('loginModal')">&times;</span>
-    <div id="login-patient">
-        <h2>Login as Patient</h2>
-        <input id="patUser" placeholder="Username" />
-        <input id="patPass" type="password" placeholder="Password" />
-        <button onclick="loginPatient()">Login</button>
+<div id="loginModal" class="modal-backdrop">
+    <div class="modal-wrapper">
+        <div class="modal-header border-0 pb-0">
+            <ul class="nav nav-tabs" role="tablist">
+                <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#login-patient" type="button">Hasta</button></li>
+                <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#login-doctor"  type="button">Doktor</button></li>
+            </ul>
+            <button class="btn-close ms-auto" aria-label="Close" onclick="closeModal('loginModal')"></button>
+        </div>
+        <div class="modal-body">
+            <div class="tab-content">
+                <!-- Login as Patient -->
+                <div class="tab-pane fade show active" id="login-patient">
+                    <div class="mb-3"><label class="form-label">Kullanıcı Adı</label><input id="patUser" type="text" class="form-control" /></div>
+                    <div class="mb-3"><label class="form-label">Şifre</label><input id="patPass" type="password" class="form-control" /></div>
+                    <button class="btn btn-primary w-100" onclick="loginPatient()">
+                        <i class="fa-solid fa-right-to-bracket me-1"></i>Giriş Yap
+                    </button>
+                </div>
+                <!-- Login as Doctor -->
+                <div class="tab-pane fade" id="login-doctor">
+                    <div class="mb-3"><label class="form-label">Kullanıcı Adı</label><input id="docUser" type="text" class="form-control" /></div>
+                    <div class="mb-3"><label class="form-label">Şifre</label><input id="docPass" type="password" class="form-control" /></div>
+                    <button class="btn btn-primary w-100" onclick="loginDoctor()">
+                        <i class="fa-solid fa-stethoscope me-1"></i>Giriş Yap
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
-    <div id="login-doctor">
-        <h2>Login as Doctor</h2>
-        <input id="docUser" placeholder="Username" />
-        <input id="docPass" type="password" placeholder="Password" />
-        <button onclick="loginDoctor()">Login</button>
-    </div>
-  </div>
 </div>
 
-<div id="patient-area" style="display:none;">
-    <h2>Patient Area</h2>
-    <div>
-        <select id="doctorId"></select>
-        <input id="apptTime" type="datetime-local" />
-        <button onclick="createAppointment()">Create Appointment</button>
-    </div>
-    <button onclick="loadPatientAppointments()">My Appointments</button>
-    <pre id="patientAppts"></pre>
-</div>
-<div id="doctor-area" style="display:none;">
-    <h2>Doctor Area</h2>
-    <button onclick="loadDoctorAppointments()">Load Appointments</button>
-    <div id="doctorAppts"></div>
-</div>
-    <script src="js/app.js"></script>
-</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let authHeader = '';
+    let currentRole = '';
+
+    let loginBtn, registerBtn, logoutBtn;
+
+    // Show/hide top navigation buttons based on login state
+    const showTopNavLoggedIn = () => {
+        loginBtn.classList.add('d-none');
+        registerBtn.classList.add('d-none');
+        logoutBtn.classList.remove('d-none');
+    };
+    const showTopNavLoggedOut = () => {
+        loginBtn.classList.remove('d-none');
+        registerBtn.classList.remove('d-none');
+        logoutBtn.classList.add('d-none');
+    };
+
+    const showModal  = id => (document.getElementById(id).style.display='block');
+    const closeModal = id => (document.getElementById(id).style.display='none');
+
+    // Grid elements (will be assigned after DOM ready)
+    let apptDate, timeGrid, timeGridPanel, apptFull;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loginBtn    = document.getElementById('loginBtn');
+        registerBtn = document.getElementById('registerBtn');
+        logoutBtn   = document.getElementById('logoutBtn');
+
+        loginBtn.addEventListener('click',   () => showModal('loginModal'));
+        registerBtn.addEventListener('click',() => showModal('registerModal'));
+        logoutBtn.addEventListener('click', logout);
+
+        // Grid refs
+        apptDate      = document.getElementById('apptDate');
+        timeGrid      = document.getElementById('timeGrid');
+        timeGridPanel = document.getElementById('timeGridPanel');
+        apptFull      = document.getElementById('apptTimeFull');
+        document.getElementById('doctorId').addEventListener('change', () => {
+            if (apptDate.value) buildGrid(apptDate.value);   // Tarih seçiliyse ızgarayı tazele
+        });
+
+
+        apptDate.addEventListener('change', () => {
+            if (!apptDate.value) return;
+            buildGrid(apptDate.value);
+            timeGridPanel.style.display = 'block';
+            apptFull.value = '';
+        });
+
+        showTopNavLoggedOut();
+    });
+
+    const doctorApptsCache = new Map();
+
+    // Fetch appointments of a doctor, caching results to avoid multiple requests
+    async function getAppointmentsOfDoctor(id) {
+        if (doctorApptsCache.has(id)) return doctorApptsCache.get(id);
+
+        const list = await fetchJSON(
+            `http://localhost:8080/api/doctor/${id}/appointments`,
+            { headers: { Authorization: authHeader } }
+        );
+        doctorApptsCache.set(id, list);
+        return list;
+    }
+
+    // Build the time grid for a specific date
+    async function buildGrid(dateStr) {
+        timeGrid.innerHTML = '';
+
+        const doctorId = document.getElementById('doctorId').value;
+        let bookedTimes = [];
+
+        //Getting appointments of the selected doctor
+        if (doctorId) {
+            try {
+                const allAppts = await getAppointmentsOfDoctor(doctorId);
+
+                // İstemci tarafında yalnızca o güne ait olanları seç
+                bookedTimes = allAppts
+                    .filter(a => a.appointmentTime.slice(0, 10) === dateStr)
+                    .map(a => a.appointmentTime.slice(11, 16)); // “HH:MM”
+            } catch (e) {
+                console.warn('Randevular alınamadı:', e);
+            }
+        }
+
+        const now = new Date();
+        const isToday = dateStr === now.toISOString().slice(0, 10);
+
+        // Create time slots from 08:00 to 17:50 in 10-minute intervals
+        for (let h = 8; h <= 17; h++) {
+            for (let m = 0; m < 60; m += 10) {
+                const timeTxt = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                const slot = document.createElement('div');
+                slot.className = 'time-slot';
+                slot.textContent = timeTxt;
+
+                const inPast   = isToday && new Date(`${dateStr}T${timeTxt}:00`) < now;
+                const isBooked = bookedTimes.includes(timeTxt);
+                if (inPast || isBooked) slot.classList.add('disabled');
+
+                slot.onclick = () => {
+                    if (slot.classList.contains('disabled')) return;
+                    document.querySelectorAll('.time-slot.active')
+                        .forEach(e => e.classList.remove('active'));
+                    slot.classList.add('active');
+                    apptFull.value = `${dateStr}T${timeTxt}`;
+                };
+
+                timeGrid.appendChild(slot);
+            }
+        }
+
+        timeGridPanel.style.display = 'block';
+        apptFull.value = '';
+    }
+
+
+    // Format ISO date string to "YYYY-MM-DD HH:MM" or placeholder
+    function formatDateTime(isoStr) {
+        return isoStr ? isoStr.replace('T', ' ').slice(0, 16) : '-';
+    }
+
+    //Register a new patient
+    function registerPatient() {
+        const data = {
+            username:document.getElementById('regUsername').value,
+            password:document.getElementById('regPassword').value,
+            name    :document.getElementById('regName').value,
+            age     :parseInt(document.getElementById('regAge').value),
+            contactNumber:document.getElementById('regContact').value
+        };
+        fetch('http://localhost:8080/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})
+            .then(r=>r.ok?alert('Kaydedildi!'):r.text().then(t=>alert(t)))
+            .catch(err=>alert(err))
+            .finally(()=>closeModal('registerModal'));
+    }
+    // Login functions for Patient
+    function loginPatient() {
+        const u=document.getElementById('patUser').value;
+        const p=document.getElementById('patPass').value;
+        fetch('http://localhost:8080/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
+            .then(r=>{if(!r.ok)throw new Error('Giriş Başarısız');return r.text();})
+            .then(()=>{authHeader='Basic '+btoa(u+':'+p);currentRole='PATIENT';
+                document.getElementById('patient-area').style.display='block';
+                document.getElementById('doctor-area').style.display='none';
+                loadDoctors();loadPatientAppointments();closeModal('loginModal');showTopNavLoggedIn();
+            }).catch(err=>alert(err.message));
+    }
+
+    // Login functions for Doctor
+    function loginDoctor() {
+        const u=document.getElementById('docUser').value;
+        const p=document.getElementById('docPass').value;
+        fetch('http://localhost:8080/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})})
+            .then(r=>{if(!r.ok)throw new Error('Giriş Başarısız');return r.text();})
+            .then(()=>{authHeader='Basic '+btoa(u+':'+p);currentRole='DOCTOR';
+                document.getElementById('doctor-area').style.display='block';
+                document.getElementById('patient-area').style.display='none';
+                loadDoctorAppointments();closeModal('loginModal');showTopNavLoggedIn();
+            }).catch(err=>alert(err.message));
+    }
+
+    // Logout function
+    function logout() {
+        authHeader=''; currentRole='';
+        document.getElementById('patient-area').style.display='none';
+        document.getElementById('doctor-area') .style.display='none';
+        showTopNavLoggedOut();
+    }
+
+    // Fetch JSON utility function
+    const fetchJSON=(u,o={})=>fetch(u,o).then(r=>{if(!r.ok)throw new Error('Sunucu hatası');return r.json();});
+
+    //Functions for Patient Panel
+
+    // Load doctors into the select dropdown
+    function loadDoctors() {
+        fetchJSON('http://localhost:8080/api/doctor',{headers:{Authorization:authHeader}})
+            .then(list=>{
+                const sel=document.getElementById('doctorId'); sel.innerHTML='';
+                list.forEach(d=>{
+                    const opt=document.createElement('option');
+                    opt.value=d.id; opt.textContent=`${d.name} (${d.specialty})`; sel.appendChild(opt);
+                });
+            });
+    }
+
+    // Create a new appointment
+    function createAppointment() {
+        const doctorIdStr = document.getElementById('doctorId').value;
+        const apptTime    = document.getElementById('apptTimeFull').value.trim();
+        // Validations
+        if (!doctorIdStr) {
+            alert('Lütfen bir doktor seçin.');
+            document.getElementById('doctorId').focus();
+            return;
+        }
+        if (!apptTime) {
+            alert('Lütfen randevu tarih-saatini belirtin.');
+            document.getElementById('apptTimeFull').focus();
+            return;
+        }
+
+        if (new Date(apptTime) < new Date()) {
+            alert('Randevu zamanı geçmişte olamaz.');
+            document.getElementById('apptTimeFull').focus();
+            return;
+        }
+        const data={doctorId:parseInt(doctorIdStr),appointmentTime:apptTime};
+        fetchJSON('http://localhost:8080/api/patient/appointments',{method:'POST',headers:{'Content-Type':'application/json',Authorization:authHeader},body:JSON.stringify(data)})
+            .then(a=>{alert('Randevu oluşturuldu: '+a.id);loadPatientAppointments();})
+            .catch(err => {
+                // Handle different error statuses
+                let message = 'Bilinmeyen bir hata oluştu, lütfen tekrar deneyin.';
+
+                console.log(err)
+
+                switch (err.status) {
+                    case 400:
+                        message = 'Eksik veya hatalı bilgi gönderdiniz. Formu kontrol edin.';
+                        break;
+                    case 401:
+                        message = 'Oturum süreniz doldu veya yetkiniz yok. Lütfen tekrar giriş yapın.';
+                        break;
+                    case 403:
+                        message = 'Bu işlemi yapmak için yetkiniz bulunmuyor.';
+                        break;
+                    case 409:
+                        message = 'Seçtiğiniz tarih ve saatte doktorun başka bir randevusu var.';
+                        break;
+                    case 500:
+                        message = 'Sunucuda beklenmeyen bir hata oluştu. Daha sonra tekrar deneyin.';
+                        break;
+                }
+                alert(`Randevu oluşturulamadı: ${message}`);
+            })}
+
+    // Load patient appointments
+    function loadPatientAppointments() {
+        fetchJSON('http://localhost:8080/api/patient/appointments', {
+            headers: { Authorization: authHeader },
+        }).then(list => {
+            const tbody = document.querySelector('#patientApptsTable tbody');
+            tbody.innerHTML = '';
+
+            list.forEach(ap => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+        <td>${ap.doctorName ?? '-'}</td>
+        <td>${ap.policlinicName ?? '-'}</td>
+        <td>${formatDateTime(ap.appointmentTime)}</td>
+        <td><span class="badge bg-${statusColor(ap.status)}">${ap.status}</span></td>
+        <td>${ap.notes ?? ''}</td>
+        <td>
+          <button class="btn btn-sm btn-danger"
+                  onclick="deleteAppointment(${ap.id})">
+            <i class="fas fa-trash-alt"></i> Sil
+          </button>
+        </td>`;
+                tbody.appendChild(tr);
+            });
+        });
+    }
+
+    // Delete an appointment
+    function deleteAppointment(id) {
+        if (!confirm('Randevuyu silmek istediğinize emin misiniz?')) return;
+        fetch('http://localhost:8080/api/patient/appointments/' + id, {
+            method: 'DELETE',
+            headers: { Authorization: authHeader },
+        }).then(() => loadPatientAppointments());
+        alert('Randevu silindi.');
+    }
+
+
+
+    // Functions for Doctor Panel
+
+    // Load doctor appointments
+    function loadDoctorAppointments(){
+        fetchJSON('http://localhost:8080/api/doctor/appointments',{headers:{Authorization:authHeader}})
+            .then(list=>{
+                const tb=document.querySelector('#doctorApptsTable tbody'); tb.innerHTML='';
+                list.forEach(ap=>{
+                    const tr=document.createElement('tr');
+
+                    const statusTd=document.createElement('td');
+                    statusTd.innerHTML=`<span class="badge bg-${statusColor(ap.status)}">${ap.status}</span>`;
+
+                    const notes=document.createElement('input');
+                    notes.type='text'; notes.className='form-control form-control-sm';
+                    notes.value=ap.notes||'';
+                    const notesTd=document.createElement('td'); notesTd.appendChild(notes);
+
+                    const approveBtn=document.createElement('button');
+                    approveBtn.className='btn btn-sm btn-success me-1';
+                    approveBtn.innerHTML='<i class="fa-solid fa-check"></i>';
+                    approveBtn.onclick=()=>updateAppointment(ap.id,'CONFIRMED',notes.value);
+                    if(ap.status==='CONFIRMED') approveBtn.disabled=true;
+
+                    const denyBtn=document.createElement('button');
+                    denyBtn.className='btn btn-sm btn-danger';
+                    denyBtn.innerHTML='<i class="fa-solid fa-xmark"></i>';
+                    denyBtn.onclick=()=>updateAppointment(ap.id,'DENIED',notes.value);
+                    if(ap.status==='DENIED') denyBtn.disabled=true;
+
+                    const saveBtn = document.createElement('button');
+                    saveBtn.className = 'btn btn-sm btn-primary ms-1';
+                    saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i>';
+                    saveBtn.onclick = () => updateAppointment(ap.id, ap.status, notes.value);
+
+                    const actionTd = document.createElement('td');
+                    actionTd.append(approveBtn, denyBtn, saveBtn);
+
+                    /* Satırı birleştir */
+                    tr.innerHTML=`
+        <td>${ap.patientName??'-'}</td>
+        <td>${formatDateTime(ap.appointmentTime)}</td>`;
+                    tr.appendChild(statusTd);
+                    tr.appendChild(notesTd);
+                    tr.appendChild(actionTd);
+                    tb.appendChild(tr);
+                });
+            });
+    }
+
+    // Update appointment status
+    function updateAppointment(id,status,notes){
+        fetch('http://localhost:8080/api/doctor/appointments/'+id+'/status',{
+            method:'PUT',
+            headers:{'Content-Type':'application/json',Authorization:authHeader},
+            body:JSON.stringify({status,notes})
+        }).then(()=>loadDoctorAppointments());
+    }
+
+    const statusColor=s=>s==='CONFIRMED'?'success':s==='DENIED'?'danger':'secondary';
+</script>
 </body>
 </html>

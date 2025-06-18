@@ -15,7 +15,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @Configuration
 public class SecurityConfig {
 
-    // 1️⃣  Tell Spring-Security to honour CORS
+    //Define the SecurityFilterChain that will be used by Spring Security
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -29,7 +29,7 @@ public class SecurityConfig {
     }
 
 
-    // 2️⃣  Provide the CorsConfigurationSource that both MVC *and* Security will reuse
+    // Provide the CorsConfigurationSource that both MVC *and* Security will reuse
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration cfg = new CorsConfiguration();

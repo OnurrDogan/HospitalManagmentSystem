@@ -15,13 +15,15 @@ public class AuthController {
 
     public AuthController(PatientService patientService, DoctorService doctorService) {
         this.patientService = patientService;
-        this.doctorService = doctorService; // DoctorService is not used in this controller
+        this.doctorService = doctorService;
     }
+    // Register a new patient
     @PostMapping("/register")
     public ResponseEntity<PatientDTO> register(@RequestBody PatientDTO dto) {
         return ResponseEntity.ok(patientService.registerPatient(dto));
     }
 
+    // Login for both patients and doctors
     @PostMapping("/login")
     public ResponseEntity<String> login(@RequestBody PatientDTO dto) {
         boolean ok = patientService.authenticate(dto.getUsername(), dto.getPassword()) ||

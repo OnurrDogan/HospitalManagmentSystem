@@ -19,6 +19,7 @@ public class PatientService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    // Registers a new patient by saving their details in the repository and encoding their password.
     public PatientDTO registerPatient(PatientDTO dto) {
         Patient patient = new Patient(dto.getUsername(), dto.getName(), dto.getAge(), dto.getContactNumber());
         patient.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -28,23 +29,19 @@ public class PatientService {
         return dto;
     }
 
+    // Retrieves a patient by their ID.
     public Patient findByUsername(String username) {
         return patientRepository.findByUsername(username).orElse(null);
     }
 
+    // Retrieves all patients from the repository and converts them to DTOs.
     public List<PatientDTO> getAllPatients() {
         return patientRepository.findAll().stream()
                 .map(p -> new PatientDTO(p.getId(), p.getUsername(), p.getName(), p.getAge(), p.getContactNumber()))
                 .collect(Collectors.toList());
     }
 
-    /**
-     * Verify doctor credentials using the stored bcrypt password.
-     *
-     * @param username provided username
-     * @param rawPassword provided raw password
-     * @return true if credentials match, false otherwise
-     */
+    //Authenticates a patient by checking if the provided username exists and if the raw password matches the stored password.
     public boolean authenticate(String username, String rawPassword) {
         Patient patient = findByUsername(username);
         return patient != null && passwordEncoder.matches(rawPassword, patient.getPassword());

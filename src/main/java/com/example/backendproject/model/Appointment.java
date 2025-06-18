@@ -32,6 +32,7 @@ public class Appointment {
         this.patient = patient;
     }
 
+    // Getters and Setters
     public Long getId() { return id; }
     public LocalDateTime getAppointmentTime() { return appointmentTime; }
     public void setAppointmentTime(LocalDateTime appointmentTime) { this.appointmentTime = appointmentTime; }

@@ -14,11 +14,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @RequiredArgsConstructor
 public class DataLoader {
-    @Bean      // <— mutlaka ekleyin
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
+    // CommandLineRunner to initialize the database with some default data for doctors and patients.
     @Bean
     CommandLineRunner initData(DoctorRepository doctorRepo, PatientRepository patientRepo) {
         return args -> {
@@ -26,6 +27,14 @@ public class DataLoader {
                 Doctor doc = new Doctor("drsmith", "Dr. Smith", "Cardiology", "123456");
                 doc.setPassword(passwordEncoder().encode("password"));
                 doctorRepo.save(doc);
+
+                Doctor doc2 = new Doctor("drjones", "Dr. Jones", "Neurology", "987654");
+                doc2.setPassword(passwordEncoder().encode("password"));
+                doctorRepo.save(doc2);
+
+                Doctor doc3 = new Doctor("drbrown", "Dr. Brown", "Pediatrics", "555-6789");
+                doc3.setPassword(passwordEncoder().encode("password"));
+                doctorRepo.save(doc3);
             }
             if (patientRepo.count() == 0) {
                 Patient pat = new Patient("johndoe", "John Doe", 30, "555-1234");

@@ -21,6 +21,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         this.patientService = patientService;
     }
 
+    // Loads user details by username for authentication.
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Doctor doctor = doctorService.findByUsername(username);
